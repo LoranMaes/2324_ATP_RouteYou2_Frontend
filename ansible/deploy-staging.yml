@@ -1,0 +1,11 @@
+---
+- name: deploy
+  hosts: stagingservers
+  become: true
+  # vars:
+  #   docker_registry: $CI_REGISTRY #registry.gitlab.com/ikdoeict/vakken/opo_agile_team_project/projecten/2324_atp_routeyou_2/frontend
+  #   docker_registry_user: $CI_REGISTRY_USER
+  #   docker_registry_password: $CI_REGISTRY_PASSWORD
+  #   docker_image_frontend: registry.gitlab.com/ikdoeict/vakken/opo_agile_team_project/projecten/2324_atp_routeyou_2/frontend
+  roles:
+    - deploy-frontend

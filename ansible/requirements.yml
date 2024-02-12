@@ -1,0 +1,7 @@
+---
+collections:
+  - name: community.docker
+  - name: community.general
+  - name: community.mysql
+# ansible-galaxy install -r requirements.yml
+# ansible-galaxy collection list

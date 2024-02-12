@@ -1,0 +1,17 @@
+{
+    "short_name": "routeyou-event-planner",
+    "name": "Routeyou Event Planner",
+    "start_url": "/",
+    "display": "standalone",
+    "scope": "/",
+    "theme_color": "#277E66",
+    "background_color": "#fafafa",
+    "icons": [
+      {
+        "src": "/images/routeyou-banner-1200x630.png",
+        "type": "image/png",
+        "sizes": "192x192"
+      }
+    ]
+  }
+  

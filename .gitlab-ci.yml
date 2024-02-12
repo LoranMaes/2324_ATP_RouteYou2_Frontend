@@ -1,0 +1,83 @@
+include:
+  - template: Auto-DevOps.gitlab-ci.yml
+
+code_coverage:
+  stage: test
+  tags:
+    - groupRunner
+  script:
+    - npm i           # Install dependencies using PNPM
+    - npm run test:ci           # Run tests
+  image: node:lts      # Gebruik de Node.js LTS-versie
+# #  only:
+# #    - protected
+
+build_image_for_staging:
+  stage: build
+  tags:
+    - groupRunner
+  image: docker:latest
+  services:
+    - docker:dind
+  variables:
+    CONTAINER_IMAGE: $CI_REGISTRY_IMAGE:latest-staging
+    DOCKER_DRIVER: overlay2
+    DOCKER_HOST: tcp://docker:2375
+    DOCKER_TLS_CERTDIR: ""
+  before_script:
+    - echo $CI_REGISTRY_PASSWORD | docker login -u $CI_REGISTRY_USER --password-stdin $CI_REGISTRY
+  script:
+    - docker info
+    - docker build -t $CONTAINER_IMAGE .
+    - docker push $CONTAINER_IMAGE
+  after_script:
+    - docker logout
+  only:
+    - dev
+
+deploy_to_staging:
+  stage: deploy
+  tags:
+    - groupRunner
+  image: rockylinux:8
+  before_script:
+    - yum install openssh-server openssh-clients -y
+    - yum makecache
+    - yum -y install sshpass
+    - yum install -y python3
+    - yum install python3-pip
+    - python3 -m pip install --upgrade pip
+    - pip3 install --upgrade cryptography
+    - pip3 install ansible
+    - pip3 install ansible-lint
+    - cd ansible
+    - chmod 770 .
+    - ansible-galaxy collection install community.docker
+    - echo $ANSIBLE_VAULT_PASSWORD > .vault_password.txt
+
+  script:
+    #- ansible -i inventory.yml all -m ping --vault-password-file .vault_password.txt
+    - ansible-playbook deploy-staging.yml --vault-password-file .vault_password.txt -e "docker_image_frontend=${docker_image_frontend} docker_registry=${CI_REGISTRY} docker_registry_user=${CI_REGISTRY_USER} docker_registry_password=${CI_REGISTRY_PASSWORD}"
+  only:
+    - dev
+
+deploy-to-production:
+  stage: deploy
+  image: google/cloud-sdk:latest
+  services:
+  - docker:dind
+  variables:
+    DOCKER_DRIVER: overlay2
+    DOCKER_HOST: tcp://docker:2375
+    DOCKER_TLS_CERTDIR: ""
+  script:
+    - echo $ENV_FILE_PRODUCTION_FRONTEND > .env
+    - echo $GOOGLE_CLOUD_CREDENTIALS > gcp_key.json
+    - gcloud auth activate-service-account --key-file=gcp_key.json
+    - gcloud config set project $PROJECT_ID
+    - gcloud auth configure-docker europe-west1-docker.pkg.dev
+    - docker build -t europe-west1-docker.pkg.dev/$PROJECT_ID/frontend-routeyou/frontend-routeyou .
+    - docker push europe-west1-docker.pkg.dev/$PROJECT_ID/frontend-routeyou/frontend-routeyou
+    - gcloud builds submit . --config=cloudbuild.yaml
+  only:
+    - main

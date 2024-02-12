@@ -1,0 +1,36 @@
+---
+# tasks file for roles/deploy-frontend
+- name: Maak een nieuwe map
+  file:
+    path: docker-frontend # Vervang dit pad door het gewenste pad voor je nieuwe map
+    state: directory
+
+- name: copy docker-compose files
+  template:
+    src: "{{ role_path }}/templates/docker-compose.yml.j2"
+    dest: /home/student/docker-frontend/docker-compose.yml
+
+- name: Log into private registry and force re-authorization
+  community.docker.docker_login:
+    registry_url: registry.gitlab.com
+    username: "{{docker_registry_user}}"
+    password: "{{docker_registry_password}}"
+    reauthorize: true
+
+- name: Execute Docker Compose
+  community.docker.docker_compose:
+    project_src: /home/student/docker-frontend/
+    project_name: frontend-routyou
+    state: present
+    recreate: always
+    pull: true
+    nocache: true
+
+- name: copy docker-compose files
+  template:
+    src: "{{ role_path }}/templates/env.staging.j2"
+    dest: /home/student/docker-frontend/env.staging
+
+- name: Copy .env file into Docker container
+  ansible.builtin.command:
+    cmd: docker cp /home/student/docker-frontend/env.staging  frontend-routyou_app_1:/app/.env

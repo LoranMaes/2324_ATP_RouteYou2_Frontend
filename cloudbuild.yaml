@@ -1,0 +1,39 @@
+# File: cloudbuild.yaml
+steps:
+  # # build the container image to the artifact registry
+  # - name: "gcr.io/cloud-builders/docker"
+  #   args:
+  #     [
+  #       "build",
+  #       "-t",
+  #       "europe-west1-docker.pkg.dev/$PROJECT_ID/frontend-routeyou/frontend-routeyou",
+  #       ".",
+  #     ]
+  # push the container image to the artifact registry
+  # - name: "gcr.io/cloud-builders/docker"
+  #   args:
+  #     [
+  #       "push",
+  #       "europe-west1-docker.pkg.dev/$PROJECT_ID/frontend-routeyou/frontend-routeyou",
+  #     ]
+  # deploy to Cloud Run
+  - name: "gcr.io/cloud-builders/gcloud"
+    args:
+      - "run"
+      - "deploy"
+      - "frontend-routeyou"
+      - "--image"
+      - "europe-west1-docker.pkg.dev/$PROJECT_ID/frontend-routeyou/frontend-routeyou"
+      - "--region"
+      - "europe-west1"
+      - "--platform"
+      - "managed"
+      - "--allow-unauthenticated"
+      - "--port"
+      - "3000"
+      - "--memory"
+      - "4Gi"
+      - "--max-instances"
+      - "10"
+      - "--min-instances"
+      - "1"

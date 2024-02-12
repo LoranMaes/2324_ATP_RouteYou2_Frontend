@@ -1,0 +1,66 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer utilities {
+  @variants focus {
+    .skiplink:focus {
+      clip: auto;
+      height: auto;
+      overflow: visible;
+      width: auto;
+    }
+  }
+
+  .skiplink {
+    clip: rect(1px, 1px, 1px, 1px);
+    display: block;
+    height: 1px;
+    overflow: hidden;
+    padding: 20px;
+    text-decoration: underline;
+    top: 1rem;
+    width: 1px;
+    z-index: 999;
+    position: absolute;
+    top: 4rem;
+    left: 50%;
+    transform: translate(-50%, -50%);
+  }
+}
+
+@layer base {
+  input[type="number"]::-webkit-inner-spin-button,
+  input[type="number"]::-webkit-outer-spin-button {
+    @apply opacity-0;
+  }
+  input[type="file"]::-webkit-file-upload-button {
+    @apply hidden;
+  }
+  h1 {
+    @apply font-bold text-h1;
+  }
+  a,
+  p,
+  span,
+  label,
+  button,
+  input,
+  textarea {
+    @apply text-base;
+  }
+  a {
+    @apply underline;
+  }
+  .gap_8_to_generate_automatically {
+    @apply gap-8;
+  }
+
+  span {
+    @apply whitespace-nowrap;
+  }
+
+  html {
+    @apply scroll-smooth;
+  }
+}
